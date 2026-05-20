@@ -3,6 +3,12 @@ import matplotlib.pyplot as plt
 import pickle
 from extract_mergers import MergerExtractor
 
+# Code Purpose
+# From the sink_particle file this code uses the extract_mergers.py code (written by Daxal Mehta) to
+# produce the mergers.pkl file which contains a list of all mergers occuring. Each BH merger contains
+# the redshift of the merger, the mass of the primary, the mass of the secondary,
+# the time of the mergerm and the ID of the merger remnant. 
+
 # ---------------------------------------------------------
 # Publication-quality Matplotlib styling
 # ---------------------------------------------------------
@@ -116,5 +122,5 @@ def plot_mergers(base, outfile="mergers.pkl", m2_threshold=1000.0):
 
 
 if __name__ == "__main__":
-    base = "/home/daxal/data/ProductionRuns/Renaissance/NoFeedback/"
+    base = "/home/jregan/data/Analysis/ArepoYTAnalysis/MBHEnvironments/MBH_Environments/SEEDZ/Code/test/"
     plot_mergers(base)

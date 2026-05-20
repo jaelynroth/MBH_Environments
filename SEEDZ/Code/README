@@ -1,0 +1,26 @@
+# MBH Merger Pipeline (SEEDZ)
+
+The full pipeline reads in data from the SEEDZ raw data, using intermediate pickle files to store outputs. The final outputs are stored in hdf5 file. 
+
+Pipeline:
+1. Generate `sink_particle.pkl` from raw simulation outputs (TBD)
+2. Run DetermineMergers.py to create mergers.pkl which is a catalog of all BH mergers detected.
+   The catalog stores, for each BH merger, the sinkID, the merger time, the merger redshift,
+   the primary mass, the secondary mass and the remnant mass. Diagnostics plots are produced too. 
+3. Run `FoF_BHs_Galaxies.py` to assign mergers to host galaxies (positions) and snapshots.
+   This script creates the file merger_galaxies.pkl
+4. 
+
+
+
+
+
+
+
+2. Run `extract_mergers.py` to identify BH mergers → `mergers.pkl`.
+3. Run `FoF_BHs_Galaxies.py` to assign mergers to host galaxies → `merger_galaxies.pkl`.
+4. Run `extract_galaxy_properties_parallel.py` to compute galaxy properties → `galaxy_properties.pkl`.
+5. Run `MBHEnvCatalogGenerator_SEEDZ.py` to build the final HDF5 catalog.
+
+Dependencies: Python 3, numpy, yt, h5py, pickle.
+Outputs: staged `.pkl` files + final `.hdf5` MBH catalog.

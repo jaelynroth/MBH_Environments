@@ -9,7 +9,7 @@ class MergerExtractor:
     def __init__(self, base):
         self.base = base
         self.reader = Reader(base)
-        self.sinks = self.reader.pickle_reader("sink_particle.pkl")
+        self.sinks = self.reader.pickle_reader("sink_particle.pkl")["data"]
 
     def extract_mergers(self):
         catalog = []
@@ -25,15 +25,20 @@ class MergerExtractor:
             deltas = np.diff(MergerMass)
             idx = np.where(deltas > 0)[0]
 
+
+            #StellarMass in now the remnant mass
+            #MergerMass will be the secondary mass (guaranteed by merger algorithm in the code)
             for j in idx:
+                RemnantMass = StellarMass[j]
+                SecondaryMass = deltas[j]
+                PrimaryMass = RemnantMass - SecondaryMass
                 entry = {
                     "SinkID": ID,
                     "Time": times[j],
                     "Redshift": 1/times[j] - 1,
-                    "M1": StellarMass[j] * 1e10 / CS.hubble_parameter,
-                    "M2": deltas[j]      * 1e10 / CS.hubble_parameter,
-                    "Mr": (StellarMass[j] + deltas[j]) 
-                           * 1e10 / CS.hubble_parameter,
+                    "M1": PrimaryMass * 1e10 / CS.hubble_parameter,
+                    "M2": SecondaryMass * 1e10 / CS.hubble_parameter,
+                    "Mr": RemnantMass * 1e10 / CS.hubble_parameter,
                 }
                 catalog.append(entry)
 

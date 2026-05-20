@@ -218,6 +218,9 @@ __marimo__/
 *.png
 *.gif
 *.pdf
+*.pkl
+*.hdf5
+*.h5
 
 # If you also want to ignore ALL large data files except .hdf5/.pkl:
 # *.dat

@@ -7,6 +7,12 @@ import logging
 from multiprocessing import Pool, cpu_count
 import matplotlib.pyplot as plt
 
+
+#Script Purpose
+#loads all merger‑host galaxies from your Step 2 catalogue and, for each snapshot, extracts the gas, stellar, DM, metallicity, R50, and BH remnant mass for each merger event using yt.
+#runs these extractions in parallel (one task per snapshot) and writes a pickle file containing a dictionary GalaxyID → {environment properties}.
+#This pickle is the final structured dataset used to generate science plots — no rerunning of the yt extraction is required unless you want to recompute the physical quantities.
+
 # ============================================================
 # CONFIGURATION
 # ============================================================
@@ -95,10 +101,10 @@ def deduplicate_galaxies(glist, ds):
 # ============================================================
 
 def process_snapshot(args):
-    snap, galaxies, base, sinks = args
+    snap, galaxies, snap_base, sinks = args
 
     logging.info(f"[Snapshot {snap}] Loading snapshot...")
-    ds = yt.load(f"{base}/snapdir_{snap:03d}/snap_{snap:03d}.0.hdf5")
+    ds = yt.load(f"{snap_base}/snapdir_{snap:03d}/snap_{snap:03d}.0.hdf5")
     ad = ds.all_data()
     h = ds.hubble_constant
 
@@ -156,7 +162,6 @@ def process_snapshot(args):
         center_yt = ds.arr(center_code, "code_length")
         region    = ds.sphere(center_yt, (R_PROP_KPC, "kpc"))
 
-        # ---- gas metallicity ----
         Mgas = float(region[("PartType0","Masses")].to("Msun").sum())
 
         if Mgas > 0:
@@ -201,10 +206,18 @@ def process_snapshot(args):
         ptype = sinks[BH_id]["meta"]["Type"]
         if ptype not in ("MBH","BH",3):
             logging.warning(f"BH id {BH_id} has Type={ptype}, expected MBH")
-            BH_mass = np.nan
+            BH_PrimaryMass = np.nan
+            BH_RemnantMass = np.nan
         else:
-            BH_mass_code = evo["StellarMass"]
-            BH_mass = BH_mass_code * (1e10 / h)     # convert to Msun
+            BH_PrimaryMass_code = evo["StellarMass"]
+            BH_PrimaryMass = BH_PrimaryMass_code * (1e10 / h)     # convert to Msun
+            print("BH Primary Mass = %e Msun" % ( BH_PrimaryMass))
+            BH_RemnantMass_code = evo["MergerMass"] + BH_PrimaryMass_code
+            BH_RemnantMass = BH_RemnantMass_code * (1e10 / h)     # convert to Msun
+            print("BH Remnant Mass = %e Msun" % ( BH_RemnantMass))
+            if(BH_PrimaryMass > BH_RemnantMass):
+                print("!!!!!Failure. The Primary mass is greater than the remnant mass. How can this be?!!!!")
+                sys.exit()
 
         # ---- DEBUG (first 5 galaxies per snapshot) ----
         if idx < 5:
@@ -215,8 +228,7 @@ def process_snapshot(args):
             print("Sink position (code units):", evo["Pos"])
             print("Center (code units):", center_code)
             print("Center (kpc):", center_yt.to("kpc").v)
-            print("BH StellarMass (code):", BH_mass_code)
-            print("BH Mass (Msun):", BH_mass)
+            print("BH Remnant Mass (Msun):", BH_RemnantMass)
             print("Metallicity mass-weighted:", Zmw)
             print("Metallicity min:", Zmin)
             print("Metallicity max:", Zmax)
@@ -228,7 +240,8 @@ def process_snapshot(args):
             "Snapshot": snap,
             "Redshift": z,
             "Center_code": center_code.tolist(),
-            "BHRemnantMass": BH_mass,
+            "BHRemnantMass": BH_RemnantMass,
+            "BHPrimaryMass": BH_PrimaryMass,
             "GasMass": Mgas,
             "HaloMass": Mdm,
             "StellarMass": Mstar,
@@ -245,7 +258,7 @@ def process_snapshot(args):
 # ============================================================
 
 def extract_galaxy_properties(
-        base,
+        snap_base, base, 
         galaxies_file="merger_galaxies.pkl",
         sinks_file="sink_particle.pkl",
         outfile="galaxy_properties.pkl"
@@ -254,7 +267,7 @@ def extract_galaxy_properties(
     logging.info("Loading sinks...")
     from DataReader import Reader
     R = Reader(base)
-    sinks = R.pickle_reader(sinks_file)
+    sinks = R.pickle_reader(sinks_file)["data"]
 
     # ------------------------------------------------------------
     # Diagnostics: Inspect sink contents
@@ -314,7 +327,7 @@ def extract_galaxy_properties(
         galaxies = pickle.load(f)
 
     # One task per merger, processed at the correct snapshot
-    tasks = [(g["Snapshot"], [g], base, sinks) for g in galaxies]
+    tasks = [(g["Snapshot"], [g], snap_base, sinks) for g in galaxies]
     
     workers = min(32, len(tasks))
     logging.info(f"Using {workers} workers for {len(tasks)} mergers")
@@ -332,29 +345,43 @@ def extract_galaxy_properties(
 
     logging.info(f"Saved {len(results)} galaxies → {outfile}")
 
-    # ---- Verification Plot ----
-    BH = np.array([v["BHRemnantMass"] for v in results.values()])
+    # ---- Plots ----
+    BH = np.array([v["BHPrimaryMass"] for v in results.values()])
     Z  = np.array([v["GasMetallicity_MW"] for v in results.values()])
+    MStellar =  np.array([v["StellarMass"] for v in results.values()])
 
     mask = (BH > 0) & (Z > 0) & np.isfinite(BH) & np.isfinite(Z)
     BH = BH[mask]
     Z  = Z[mask]
-
+    MStellar = MStellar[mask]
+    
     plt.figure(figsize=(8,6))
     plt.scatter(Z, BH, s=20, alpha=0.7, color="tab:blue")
     plt.xlim(1e-5, 1e0)
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel(r"Mass-Weighted Gas Metallicity [$Z/Z_\odot$]")
-    plt.ylabel(r"BH Remnant Mass [$M_\odot$]")
-    plt.title("BH Mass vs Gas Metallicity")
+    plt.ylabel(r"BH Primary Mass [$M_\odot$]")
     plt.tight_layout()
     plt.savefig("BHMass_vs_Metallicity.png")
     logging.info("Saved BHMass_vs_Metallicity.png")
+
+
+    plt.figure(figsize=(8,6))
+    plt.scatter(MStellar, BH, s=20, alpha=0.7, color="tab:blue")
+    plt.xlim(1e3, 1e10)
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel(r"Stellar Mass [$M_\odot$]")
+    plt.ylabel(r"BH Primary Mass [$M_\odot$]")
+    plt.tight_layout()
+    plt.savefig("BHMass_vs_StellarMass.png")
+    logging.info("Saved BHMass_vs_StellarMass.png")
 
     return results
 
 # ============================================================
 if __name__ == "__main__":
-    base = "/home/daxal/data/ProductionRuns/Renaissance/NoFeedback/"
-    extract_galaxy_properties(base)
+    snap_base = "/home/daxal/data/ProductionRuns/Renaissance/NoFeedback/"
+    base = "./test/"
+    extract_galaxy_properties(snap_base, base)

@@ -220,12 +220,12 @@ def get_binary_information(metadata):
     Separation         = np.full(N, np.nan)   # Fill with NaN (not provided)
     NumberDensity      = np.zeros(N)
 
-    RemnantStellarMass = np.zeros(N)
-    RemnantHaloMass    = np.zeros(N)
-    RemnantMetallicity = np.zeros(N)
-    RemnantR50         = np.zeros(N)
-    RemnantRedshift    = np.zeros(N)
-    RemnantPosition    = np.array(["central"] * N)
+    HostGalaxyStellarMass = np.zeros(N)
+    HostGalaxyHaloMass    = np.zeros(N)
+    HostGalaxyMetallicity = np.zeros(N)
+    HostGalaxyR50         = np.zeros(N)
+    HostGalaxyRedshift    = np.zeros(N)
+    HostGalaxyPosition    = np.array(["central"] * N)
 
     Vbox = metadata["BoxSize"]**3
 
@@ -233,16 +233,17 @@ def get_binary_information(metadata):
         g = step3_results[gid]
 
         # Binary properties
-        PrimaryMass[i]   = g["BHRemnantMass"]
+        PrimaryMass[i]   = g["BHPrimaryMass"]
+        SecondaryMass[i] = g["BHRemnantMass"]- g["BHPrimaryMass"]
         Redshift[i]      = g["Redshift"]
         NumberDensity[i] = 1.0 / Vbox
 
         # Host galaxy
-        RemnantStellarMass[i] = g["StellarMass"]
-        RemnantHaloMass[i]    = g["HaloMass"]
-        RemnantMetallicity[i] = g["GasMetallicity_MW"]
-        RemnantR50[i]         = g["R50_kpc"]
-        RemnantRedshift[i]    = g["Redshift"]
+        HostGalaxyStellarMass[i] = g["StellarMass"]
+        HostGalaxyHaloMass[i]    = g["HaloMass"]
+        HostGalaxyMetallicity[i] = g["GasMetallicity_MW"]
+        HostGalaxyR50[i]         = g["R50_kpc"]
+        HostGalaxyRedshift[i]    = g["Redshift"]
 
     metadata["NumberBinaries"] = N
 
@@ -258,12 +259,12 @@ def get_binary_information(metadata):
         },
         "HostGalaxy": {
             "GalaxyID": np.array(galaxy_ids),
-            "RemnantStellarMass": RemnantStellarMass,
-            "RemnantHaloMass": RemnantHaloMass,
-            "RemnantMetallicity": RemnantMetallicity,
-            "RemnantR50": RemnantR50,
-            "RemnantRedshift": RemnantRedshift,
-            "RemnantPosition": RemnantPosition,
+            "HostGalaxyStellarMass": HostGalaxyStellarMass,
+            "HostGalaxyHaloMass": HostGalaxyHaloMass,
+            "HostGalaxyMetallicity": HostGalaxyMetallicity,
+            "HostGalaxyR50": HostGalaxyR50,
+            "HostGalaxyRedshift": HostGalaxyRedshift,
+            "HostGalaxyPosition": HostGalaxyPosition,
             "SFR": {},  # optional
         }
     }
@@ -373,12 +374,12 @@ def validate_catalog(filename):
 
     required_gal_fields = [
         "GalaxyID",
-        "RemnantStellarMass",
-        "RemnantHaloMass",
-        "RemnantMetallicity",
-        "RemnantR50",
-        "RemnantRedshift",
-        "RemnantPosition",
+        "HostGalaxyStellarMass",
+        "HostGalaxyHaloMass",
+        "HostGalaxyMetallicity",
+        "HostGalaxyR50",
+        "HostGalaxyRedshift",
+        "HostGalaxyPosition",
     ]
 
     print("\n[Validator] Validating catalog:", filename)
@@ -428,8 +429,8 @@ def validate_catalog(filename):
 
         # ---- Check no NaNs in required numeric fields ----
         numeric_bh_fields = ["PrimaryMass", "Redshift", "NumberDensity"]
-        numeric_gal_fields = ["RemnantStellarMass", "RemnantHaloMass",
-                              "RemnantMetallicity", "RemnantR50"]
+        numeric_gal_fields = ["HostGalaxyStellarMass", "HostGalaxyHaloMass",
+                              "HostGalaxyMetallicity", "HostGalaxyR50"]
 
         for key in numeric_bh_fields:
             if np.isnan(bh[key][:]).any():

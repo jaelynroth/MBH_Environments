@@ -4,12 +4,18 @@ import yt
 import glob
 from DataReader import Reader
 
+# Code Purpose
+# Connect the BH mergers (as determined from the sink pickle files to snapshots.
+# Dumps out the merger_galaxies.pkl file which contains the merger snapshot
+# (closest one to merger at least) number, the redshift of the snapshot,
+# the BH position at that redshift, the BH ID (to connect to the mergers.pkl file)
+# and a galaxy ID (dummy for now).
 
 # ---------------------------------------------------------
 # Load redshifts of hydrodynamic snapshots
 # ---------------------------------------------------------
-def load_snapshot_redshifts(base):
-    snapdirs = sorted(glob.glob(f"{base}/snapdir_*"))
+def load_snapshot_redshifts(snap_base):
+    snapdirs = sorted(glob.glob(f"{snap_base}/snapdir_*"))
     snap_info = []
 
     for path in snapdirs:
@@ -49,21 +55,21 @@ def get_position_at_snapshot(ID, a_snap, sinks):
 # MAIN PIPELINE
 # ---------------------------------------------------------
 def build_merger_galaxies(
-        base,
+        pkl_base, snap_base, 
         mergers_file="mergers.pkl",
         outfile="merger_galaxies.pkl"
     ):
 
     # Load sinks
-    R = Reader(base)
-    sinks = R.pickle_reader("sink_particle.pkl")
+    R = Reader(pkl_base)
+    sinks = R.pickle_reader("sink_particle.pkl")["data"]
 
     # Load mergers
     with open(mergers_file, "rb") as f:
         mergers = pickle.load(f)
 
     # Load snapshot redshifts
-    snap_list = load_snapshot_redshifts(base)
+    snap_list = load_snapshot_redshifts(snap_base)
     if len(snap_list) == 0:
         raise RuntimeError("No hydrodynamic snapshots found!")
 
@@ -112,5 +118,6 @@ def build_merger_galaxies(
 
 
 if __name__ == "__main__":
-    base = "/home/daxal/data/ProductionRuns/Renaissance/NoFeedback/"
-    build_merger_galaxies(base)
+    pkl_base = "/home/jregan/data/Analysis/ArepoYTAnalysis/MBHEnvironments/MBH_Environments/SEEDZ/Code/test/"
+    snap_base = "/home/daxal/data/ProductionRuns/Renaissance/NoFeedback/"
+    build_merger_galaxies(pkl_base, snap_base)

@@ -265,12 +265,12 @@ def get_binary_information(metadata):
         "HostGalaxy": {
             'GalaxyID': galid,
             'SFR': sfr,
-            'RemnantStellarMass': mstar,
-            'RemnantHaloMass': mdm,
-            'RemnantRedshift': zgal,
-            'RemnantR50': R50,
-            'RemnantMetallicity': metallicity,
-            'RemnantPosition': galpos,
+            'HostGalaxyStellarMass': mstar,
+            'HostGalaxyHaloMass': mdm,
+            'HostGalaxyRedshift': zgal,
+            'HostGalaxyR50': R50,
+            'HostGalaxyMetallicity': metallicity,
+            'HostGalaxyPosition': galpos,
         }
     }
 
@@ -354,12 +354,12 @@ def validate_catalog(filename):
 
     required_gal_fields = [
         "GalaxyID",
-        "RemnantStellarMass",
-        "RemnantHaloMass",
-        "RemnantMetallicity",
-        "RemnantR50",
-        "RemnantRedshift",
-        "RemnantPosition",
+        "HostGalaxyStellarMass",
+        "HostGalaxyHaloMass",
+        "HostGalaxyMetallicity",
+        "HostGalaxyR50",
+        "HostGalaxyRedshift",
+        "HostGalaxyPosition",
     ]
 
     print("\n[Validator] Validating catalog:", filename)
@@ -409,8 +409,8 @@ def validate_catalog(filename):
 
         # ---- Check no NaNs in required numeric fields ----
         numeric_bh_fields = ["PrimaryMass", "Redshift", "NumberDensity"]
-        numeric_gal_fields = ["RemnantStellarMass", "RemnantHaloMass",
-                              "RemnantMetallicity", "RemnantR50"]
+        numeric_gal_fields = ["HostGalaxyStellarMass", "HostGalaxyHaloMass",
+                              "HostGalaxyMetallicity", "HostGalaxyR50"]
 
         for key in numeric_bh_fields:
             if np.isnan(bh[key][:]).any():
