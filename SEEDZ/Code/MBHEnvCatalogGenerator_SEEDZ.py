@@ -64,6 +64,7 @@ import h5py
 import numpy as np
 import sys
 import pickle
+import glob
 
 __VERSION__ = '1.0' # catalog version
 DEBUG = False
@@ -205,14 +206,24 @@ def get_binary_information(metadata):
     output pickle and populate the MBH Environments catalog structure.
     """
 
-    step3_file = "galaxy_properties.pkl"   # change if needed
+    files = []
+    files.append("Normal1_NoFB/galaxy_properties.pkl")
+    files.append("Normal2_NoFB/galaxy_properties.pkl")
+    files.append("Rarepeak_NoFB/galaxy_properties.pkl")
 
-    with open(step3_file, "rb") as f:
-        step3_results = pickle.load(f)
+    print("Reading files: ", files)
+    galaxyresults = {}
+    for galfile in files:
+        with open(galfile, "rb") as f:
+            data = pickle.load(f)
+        max_id = max(galaxyresults.keys()) if galaxyresults else 0
+        for k, v in data.items():
+            galaxyresults[max_id + k + 1] = v
 
-    galaxy_ids = sorted(step3_results.keys())
+        print(f"Loaded {galfile}: {len(data)} galaxies")
+    galaxy_ids = sorted(galaxyresults.keys())
     N = len(galaxy_ids)
-
+    print("N = ", N)
     # --- Preallocate arrays ---
     PrimaryMass        = np.zeros(N)
     SecondaryMass      = np.full(N, np.nan)   # Only primary BH mass available
@@ -230,7 +241,7 @@ def get_binary_information(metadata):
     Vbox = metadata["BoxSize"]**3
 
     for i, gid in enumerate(galaxy_ids):
-        g = step3_results[gid]
+        g = galaxyresults[gid]
 
         # Binary properties
         PrimaryMass[i]   = g["BHPrimaryMass"]
@@ -446,13 +457,14 @@ def validate_catalog(filename):
 
 
 def main():
+    import shutil
     print("Generating MBH Environment Catalog for %s..." % (SIMULATION))
 
     metadata, mbhenv = input_data()
   
     filename = "MBH_Environment_Catalog_%s.hdf5" % (SIMULATION)
     write_catalog_hdf5(filename, metadata, mbhenv)
-
+    shutil.copy(filename, '../Catalogues/')
     print(f"[✓] Wrote final catalog to %s" % (filename))
 
     validate_catalog(filename)

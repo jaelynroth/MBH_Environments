@@ -10,6 +10,8 @@ from DataReader import Reader
 # (closest one to merger at least) number, the redshift of the snapshot,
 # the BH position at that redshift, the BH ID (to connect to the mergers.pkl file)
 # and a galaxy ID (dummy for now).
+# Note that the same galaxy will be added to to the merger_galaxies file if a BH
+# merger occurs in the same galaxy at a different redshift. 
 
 # ---------------------------------------------------------
 # Load redshifts of hydrodynamic snapshots
