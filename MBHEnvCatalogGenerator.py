@@ -85,10 +85,8 @@ def input_data():
     This function collects the necessary information to produce the MBH Env catalog.
 
     Users should perform the following actions:
-    1) edit the 'metadata' dictionary in this function to provide with the specific information concerning a certain model;
-    2) edit the 'MBHB_no_delay' function to provide with the no-delay binary catalog;
-    3) [optional] edit the 'MBHB_delay' function to provide with the delay binary catalog. Leave an empty dict if the delay model is not present;
-    4) edit the MBH_population function to provide with the complete MBH population at selected redshifts.
+    1) edit the 'metadata' dictionary in this function to provide the specific information concerning a certain model;
+    2) edit the 'get_binary_information' function in order to populate the numpy arrays with information from your datasets
 
     IMPORTANT: If a field does not apply to your specific model (e.g. spatial resolution for EPS SAMs), set it to 'np.nan'.
 
@@ -136,13 +134,13 @@ def input_data():
         'HubbleConstant': 70, #km s^-1 Mpc^-1
         'OmegaMatter': 0.3,
         'OmegaLambda': 0.7,
-        'BoxSize': 1e0, # cMpc
+        'BoxSize': 1e0, # cMpc h^-1 (comoving)
         'MinBHSeedMass': 5e3, #M_sun
         'MinRedshift': 10,
         'MaxRedshift': 20,
         'StellarMassResolution': 1e3, # M_sun
         'DarkMatterMassResolution': 1e5, # M_sun
-        'SpatialResolution': np.nan, # kpc
+        'SpatialResolution': 5, # pc h^-1 (comoving)
         # OPTIONAL:
         'MinimumDarkMatterHaloMass': 1e6, # M_sun
         'GasMassResolution': 1e2, # M_sun

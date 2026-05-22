@@ -131,22 +131,22 @@ def input_data():
         'Principal': ["John Regan"],
         'Reference': ["DOI1", "DOI2"],
         # OPTIONAL:
-        'Website': ["https://www.github.com/mbonetti90/MBHCatalogs"],
+        'Website': ["None"],
 
         # ---- Model parameters - metadata specification for simulation(s) used to construct catalog
         # REQUIRED
         'HubbleConstant': 67.4, #km s^-1 Mpc^-1
         'OmegaMatter': 0.315,
         'OmegaLambda': 0.685,
-        'BoxSize': 1e0, # cMpc
+        'BoxSize': 1e0, # cMpc h^-1
         'MinBHSeedMass': 5e3, #M_sun
         'MinRedshift': 10,
         'MaxRedshift': 20,
         'StellarMassResolution': 1e3, # M_sun
-        'DarkMatterMassResolution': 1e5, # M_sun
-        'SpatialResolution': np.nan, # kpc
+        'DarkMatterMassResolution': 1e4, # M_sun
+        'SpatialResolution': 5, # h^-1 pc (comoving)
         # OPTIONAL:
-        'MinimumDarkMatterHaloMass': 1e6, # M_sun
+        'MinimumDarkMatterHaloMass': 1e5, # M_sun
         'GasMassResolution': 1e2, # M_sun
     }
     #*********************************************************#
