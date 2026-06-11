@@ -3,7 +3,7 @@
 The full pipeline reads in data from the SEEDZ raw data, using intermediate pickle files to store outputs. The final outputs are stored in hdf5 file. 
 
 Pipeline:
-1. Generate `sink_particle.pkl` from raw simulation outputs (TBD)
+1. Run CreateSinkPickleFile to generate `sink_particle.pkl` from raw simulation outputs 
 2. Run DetermineMergers.py to create mergers.pkl which is a catalog of all BH mergers detected.
    The catalog stores, for each BH merger, the sinkID, the merger time, the merger redshift,
    the primary mass, the secondary mass and the remnant mass. Diagnostics plots are produced too. 
@@ -14,3 +14,11 @@ Pipeline:
 
 Dependencies: Python 3, numpy, yt, h5py, pickle.
 Outputs: staged `.pkl` files + final `.hdf5` MBH catalog.
+
+
+
+Notes:
+
+1. CreateSinkPickleFile.py
+
+From the binary sink_particle_info files create 

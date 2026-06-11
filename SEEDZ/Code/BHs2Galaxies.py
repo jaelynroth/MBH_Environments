@@ -35,10 +35,13 @@ def load_snapshot_redshifts(snap_base):
 
 
 # ---------------------------------------------------------
-# Find nearest snapshot to a given redshift
+# Find nearest snapshot that is before the merger redshift
 # ---------------------------------------------------------
 def nearest_snapshot(z, snap_list):
-    return min(snap_list, key=lambda x: abs(x[1] - z))[0]
+    before = [(snap, z_snap) for snap, z_snap in snap_list if z_snap > z]
+    if not before:
+        return min(snap_list, key=lambda x: abs(x[1] - z))[0]  # fallback: merger before first snapshot
+    return min(before, key=lambda x: x[1])[0]  # nearest = lowest redshift in the before set
 
 
 # ---------------------------------------------------------
@@ -106,6 +109,7 @@ def build_merger_galaxies(
             "PrimaryID": primary_id,
             "Snapshot": snap,
             "Redshift": z_snap,
+            "MergerTime": m["Time"],
             "Center": pos.tolist(),
         })
 

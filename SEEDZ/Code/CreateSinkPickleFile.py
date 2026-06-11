@@ -250,10 +250,14 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("snap_base", help="Path to simulation snapshot directory")
+    parser.add_argument("feedback", choices=["FullFeedback", "WeakFeedback", "NoFeedback"], help="Feedback model")
     args = parser.parse_args()
 
     CWD_BASE         = "./"
-    FEEDBACK         = False
+    if(args.feedback == "NoFeedback"):
+        FEEDBACK         = False
+    else:
+        FEEDBACK         = True
     ARRAY_LENGTH     = 1
     HUBBLE_PARAMETER = 0.6774
 

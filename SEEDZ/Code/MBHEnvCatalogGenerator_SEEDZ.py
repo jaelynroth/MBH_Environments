@@ -82,7 +82,7 @@ np.random.seed(5)
 
 SIMULATION="SEEDZ"
 
-def input_data():
+def input_data(feedback):
     '''
     This function collects the necessary information to produce the MBH Env catalog.
 
@@ -157,14 +157,14 @@ def input_data():
     ###########################################################
 
 
-    mbhenv = get_binary_information(metadata)
+    mbhenv = get_binary_information(metadata, feedback)
 
 
     return metadata, mbhenv
 
 ############################################################################################
 
-def get_binary_information(metadata):
+def get_binary_information(metadata, feedback):
 
     '''
     Function to collect properties of binaries assuming no-delay models.
@@ -206,11 +206,33 @@ def get_binary_information(metadata):
     output pickle and populate the MBH Environments catalog structure.
     """
 
-    files = []
-    files.append("Normal1_NoFB/galaxy_properties.pkl")
-    files.append("Normal2_NoFB/galaxy_properties.pkl")
-    files.append("Rarepeak_NoFB/galaxy_properties.pkl")
+    import os
 
+    files = []
+    if feedback == "NoFeedback":
+        candidates = [
+            "Normal1_NoFeedback/galaxy_properties.pkl",
+            "Normal2_NoFeedback/galaxy_properties.pkl",
+            "Rarepeak_NoFeedback/galaxy_properties.pkl",
+        ]
+    elif feedback == "WeakFeedback":
+        candidates = [
+            "Normal1_WeakFeedBack/galaxy_properties.pkl",
+            "Normal2_WeakFeedBack/galaxy_properties.pkl",
+            "Rarepeak_WeakFeedback/galaxy_properties.pkl",
+        ]
+    elif feedback == "FullFeedback":
+        candidates = [
+            "Normal1_FullFeedback/galaxy_properties.pkl",
+            "Normal2_FullFeedback/galaxy_properties.pkl",
+            "Rarepeak_FullFeedback/galaxy_properties.pkl",
+        ]
+       
+    for f in candidates:
+        if os.path.exists(f):
+            files.append(f)
+        else:
+            print(f"[WARN] Skipping missing file: {f}")
     print("Reading files: ", files)
     galaxyresults = {}
     for galfile in files:
@@ -246,6 +268,7 @@ def get_binary_information(metadata):
         # Binary properties
         PrimaryMass[i]   = g["BHPrimaryMass"]
         SecondaryMass[i] = g["BHRemnantMass"]- g["BHPrimaryMass"]
+        print("SecondaryMass[%d] = %e" % (i, SecondaryMass[i]))
         Redshift[i]      = g["Redshift"]
         NumberDensity[i] = 1.0 / Vbox
 
@@ -441,7 +464,7 @@ def validate_catalog(filename):
         # ---- Check no NaNs in required numeric fields ----
         numeric_bh_fields = ["PrimaryMass", "Redshift", "NumberDensity"]
         numeric_gal_fields = ["HostGalaxyStellarMass", "HostGalaxyHaloMass",
-                              "HostGalaxyMetallicity", "HostGalaxyR50"]
+                              "HostGalaxyMetallicity"]
 
         for key in numeric_bh_fields:
             if np.isnan(bh[key][:]).any():
@@ -458,9 +481,13 @@ def validate_catalog(filename):
 
 def main():
     import shutil
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("fb", help="Which AGN feedback prescription are we extracting (NoFeedback, WeakFeedback or FullFeedback)?")
+    args = parser.parse_args()
     print("Generating MBH Environment Catalog for %s..." % (SIMULATION))
 
-    metadata, mbhenv = input_data()
+    metadata, mbhenv = input_data(args.fb)
   
     filename = "MBH_Environment_Catalog_%s.hdf5" % (SIMULATION)
     write_catalog_hdf5(filename, metadata, mbhenv)

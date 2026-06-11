@@ -51,7 +51,12 @@ def load_catalog(filename):
 # ============================================================
 
 def make_plots(BH_Primary, BH_Secondary, Z, MStellar, Redshift):
+    logging.info(f"Number of merger systems before masking: {len(BH_Primary)}")
 
+    print("BH_Primary = ", BH_Primary)
+    print("BH_Secondary = ", BH_Secondary)
+    print("MStellar = ", MStellar)
+    print("Z = ", Z)
     # ---- Mask invalid values ----
     mask = (BH_Primary > 0) & (BH_Secondary > 0) & (Z > 0) & (MStellar > 0) & \
        np.isfinite(BH_Primary) & np.isfinite(BH_Secondary) & np.isfinite(Z) & np.isfinite(MStellar)
@@ -64,7 +69,7 @@ def make_plots(BH_Primary, BH_Secondary, Z, MStellar, Redshift):
     MStellar = MStellar[mask]
     Redshift = Redshift[mask]
 
-    logging.info(f"Number of merger systems: {len(BH_Primary)}")
+    logging.info(f"Number of merger systems after masking: {len(BH_Primary)}")
     print("Stellar Masses (min %e, max %e) " % (MStellar.min(), MStellar.max()))
     print("BH Masses (min %e, max %e) " % (RemnantBHMass.min(), RemnantBHMass.max()))
     print("Mass Weighted Metallicities (min %e, max %e) " % (Z.min(), Z.max()))
@@ -114,7 +119,7 @@ def make_plots(BH_Primary, BH_Secondary, Z, MStellar, Redshift):
 
 if __name__ == "__main__":
 
-    filename = "SEEDZ/Catalogues/MBH_Environment_Catalog_SEEDZ.hdf5"  # change to your actual file name
+    filename = "/home/jregan/data/Analysis/ArepoYTAnalysis/MBHEnvironments/MBH_Environments/SEEDZ/Catalogues/MBH_Environment_Catalog_SEEDZ.hdf5"  # change to your actual file name
 
     print("Available Datasets:\n")
     with h5py.File(filename, 'r') as f:
