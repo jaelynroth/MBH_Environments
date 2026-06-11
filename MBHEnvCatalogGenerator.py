@@ -6,25 +6,11 @@ Catalog v1.0 is primarily meant to collect data from datasets on
 (i) the environments surrounding MBH (numerical) mergers
 
 
-(i) information on binary MBHs for “no delay” cases that will be used to create a uniform “delay” case for all models, 
-(ii) information on the full MBH population that will be used to build AGN luminosity functions and MBH-Mgal relations to compare to observations. 
-A group can also provide a “delay” case that will be used for the paper, but this can also be provided at later time. 
-There are some additional data, such as dark matter halo information, that can be optionally provided for v2.1 if desired.  
-
-Links
------
-- Catalog v2.1 spreadsheet:
-  https://docs.google.com/spreadsheets/d/1Zz-A5QcKHdPabpSmkKcs9ERzeAA0sqM_/edit?usp=sharing&ouid=113068423500393235248&rtpof=true&sd=true
-- MBHCatalogs github for code:
-  https://github.com/mbonetti90/MBHCatalogs
-- MBHCatalogs google drive for simulation data:
-  https://drive.google.com/drive/folders/1rW-cdOrMglfp2w72X0jmdu1G5COb7RDk?usp=sharing
-- MBHCatalogs general folder
-  https://drive.google.com/drive/folders/1YQYw-Km-N5b5jjeHYQ4Ls6LTbXxKh9VC?usp=sharing
 Authors
 -------
 - Matteo Bonetti : matteo.bonetti@unimib.it
 - Luke Zoltan Kelley : lzkelley@berkeley.edu
+- John Regan: john.regan@mu.ie
 
 - Structure
 -------
@@ -43,9 +29,8 @@ This script has four main parts:
 ---
 - Simple usage:
 
-python3 hdf5_catalog_v2.1.py -W -F the_name_of_the_file_to_be_produced
+python3 MBHEnvCatalogGenerator_<YourSimulationDataset>.py <your_command_line_arguments>
 
-type -h for immediate help
 
 
 """
@@ -63,6 +48,8 @@ import matplotlib.pyplot as plt
 import h5py
 import numpy as np
 import sys
+import pickle
+import glob
 
 __VERSION__ = '1.0' # catalog version
 DEBUG = False
@@ -77,12 +64,12 @@ np.random.seed(5)
 ############################################################################################
 ############################################################################################
 
-
+#You'll need to change this to your simulation
 SIMULATION="SEEDZ"
 
 def input_data():
     '''
-    This function collects the necessary information to produce the MBH Env catalog.
+    This function collects the necessary information to produce the MBH Env Catalog
 
     Users should perform the following actions:
     1) edit the 'metadata' dictionary in this function to provide the specific information concerning a certain model;
@@ -105,7 +92,7 @@ def input_data():
         
     All the other functions should be left unchanged.
 
-    Returns: 4 dictionaries -> metadata, allbhs, binaries_nodelay, binaries_delay
+    Returns: 2 dictionaries -> metadata, mbhenv
     '''
 
     ###########################################################

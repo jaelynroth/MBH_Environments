@@ -19,9 +19,11 @@ import sys
 
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal1/0.5Mpc/NoFeedback/"
 
-#Vanilla Feedback
-Feedback = "FullFeedback"
+#Choose Feedback
+#Feedback = "FullFeedback"
+Feedback = "WeakFeedback"
 
+#Choose Region
 #Region = "Rarepeak"
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Feedback_Elliptical/"
 #Region = "Normal1"
@@ -29,8 +31,6 @@ Feedback = "FullFeedback"
 #Region = "Normal2"
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal2/0.5Mpc/Feedback/"
 
-#Weak Feedback
-Feedback = "WeakFeedback"
 
 #Region = "Rarepeak"
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/WeakFeedback_Elliptical/"
