@@ -58,16 +58,23 @@ def build_struct_format(feedback=False, array_length=1):
 # Main parser
 # ---------------------------------------------------------------------------
 
-def read_sink_info(snap_base, cwd_base, feedback=False, array_length=1, hubble_parameter=0.6774):
+def read_sink_info(snap_base, cwd_base, region, feedback_type="NoFeedback", array_length=1, hubble_parameter=0.6774):
 
-    struct_format, struct_size = build_struct_format(feedback, array_length)
-
+    pkl_dir = "%s%s_%s" % (cwd_base, region, feedback_type)
+    print("pkl_dir = ", pkl_dir)
     sink_base       = os.path.join(snap_base, "sink_particle_info/")
-    pickle_file     = os.path.join(cwd_base, "sink_particle.pkl")
-    pickle_file_popii = os.path.join(cwd_base, "popii_particles.pkl")
+    pickle_file     = os.path.join(pkl_dir, "sink_particle.pkl")
+    pickle_file_popii = os.path.join(pkl_dir, "popii_particles.pkl")
+    if(feedback_type == "NoFeedback"):
+        feedback         = False
+    else:
+        feedback         = True
+    struct_format, struct_size = build_struct_format(feedback, array_length)  
+
+    print("feedback = ", feedback)
 
     files = sorted(os.listdir(sink_base))
-
+   
     # ------------------------------------------------------------------
     # Decide what to process
     # ------------------------------------------------------------------
@@ -104,7 +111,7 @@ def read_sink_info(snap_base, cwd_base, feedback=False, array_length=1, hubble_p
     # ------------------------------------------------------------------
     for fname in files_to_process:
         filepath = os.path.join(sink_base, fname)
-        print(f"Opening file: {filepath}\n")
+        print(f"\nOpening file: {filepath}\n")
 
         with open(filepath, "rb") as f:
             while True:
@@ -157,7 +164,7 @@ def read_sink_info(snap_base, cwd_base, feedback=False, array_length=1, hubble_p
                         "StellarMass": data[23] if feedback else data[21],
                         "MergerMass":  data[24] if feedback else data[22],
                     }
-
+                    
                     # PopIII (0) and MBH (3) -> sink_particles
                     if entry["Type"] in (0, 3):
                         if sink_id not in sink_particles:
@@ -177,7 +184,7 @@ def read_sink_info(snap_base, cwd_base, feedback=False, array_length=1, hubble_p
                     # PopII (2) -> popii_particles
                     elif entry["Type"] == 2:
                         if sink_id not in popii_particles:
-                            print(f"\r  Adding particles: PopIII/MBHs: {len(sink_particles)} PopII: {len(popii_particles)} ", end="", flush=True)
+                            print(f"\r  Adding particles: PopIII/MBHs: {len(sink_particles)} PopII: {len(popii_particles)} Redshift: {(1/time) - 1:.2f}", end="", flush=True)
                             popii_particles[sink_id] = {
                                 "meta": {
                                     "StellarLifeTime": data[19],
@@ -251,17 +258,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("snap_base", help="Path to simulation snapshot directory")
     parser.add_argument("feedback", choices=["FullFeedback", "WeakFeedback", "NoFeedback"], help="Feedback model")
+    parser.add_argument("region", choices=["Rarepeak", "Normal1", "Normal2"], help="Region")
     args = parser.parse_args()
 
     CWD_BASE         = "./"
-    if(args.feedback == "NoFeedback"):
-        FEEDBACK         = False
-    else:
-        FEEDBACK         = True
     ARRAY_LENGTH     = 1
     HUBBLE_PARAMETER = 0.6774
 
-    read_sink_info(snap_base=args.snap_base, cwd_base=CWD_BASE,
-                   feedback=FEEDBACK, array_length=ARRAY_LENGTH,
+    read_sink_info(snap_base=args.snap_base, cwd_base=CWD_BASE, region=args.region,
+                   feedback_type=args.feedback, 
+                   array_length=ARRAY_LENGTH,
                    hubble_parameter=HUBBLE_PARAMETER)
 

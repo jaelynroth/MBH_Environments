@@ -69,6 +69,7 @@ def make_plots(BH_Primary, BH_Secondary, Z, MStellar, Redshift):
     MStellar = MStellar[mask]
     Redshift = Redshift[mask]
 
+    
     logging.info(f"Number of merger systems after masking: {len(BH_Primary)}")
     print("Stellar Masses (min %e, max %e) " % (MStellar.min(), MStellar.max()))
     print("BH Masses (min %e, max %e) " % (RemnantBHMass.min(), RemnantBHMass.max()))

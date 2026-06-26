@@ -202,8 +202,8 @@ def get_binary_information(metadata, feedback):
         ]
     elif feedback == "WeakFeedback":
         candidates = [
-            "Normal1_WeakFeedBack/galaxy_properties.pkl",
-            "Normal2_WeakFeedBack/galaxy_properties.pkl",
+            "Normal1_WeakFeedback/galaxy_properties.pkl",
+            "Normal2_WeakFeedback/galaxy_properties.pkl",
             "Rarepeak_WeakFeedback/galaxy_properties.pkl",
         ]
     elif feedback == "FullFeedback":
@@ -253,7 +253,7 @@ def get_binary_information(metadata, feedback):
         # Binary properties
         PrimaryMass[i]   = g["BHPrimaryMass"]
         SecondaryMass[i] = g["BHRemnantMass"]- g["BHPrimaryMass"]
-        print("SecondaryMass[%d] = %e" % (i, SecondaryMass[i]))
+        #print("SecondaryMass[%d] = %e" % (i, SecondaryMass[i]))
         Redshift[i]      = g["Redshift"]
         NumberDensity[i] = 1.0 / Vbox
 
@@ -263,7 +263,7 @@ def get_binary_information(metadata, feedback):
         HostGalaxyMetallicity[i] = g["GasMetallicity_MW"]
         HostGalaxyR50[i]         = g["R50_kpc"]
         HostGalaxyRedshift[i]    = g["Redshift"]
-
+    print("Redshift Range = (%1.1f, %1.1f)" % ((Redshift.min(), Redshift.max())))
     metadata["NumberBinaries"] = N
 
     # --- Final mbhenv dictionary ---

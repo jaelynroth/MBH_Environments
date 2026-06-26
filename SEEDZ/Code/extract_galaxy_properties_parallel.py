@@ -313,20 +313,47 @@ def process_snapshot(args):
         # ---- Aperture R50 ----
 
         # Get stars within aperture region only
-        region_star4_pos  = region[("PartType4","Coordinates")].v
-        region_star4_mass = region[("PartType4","Masses")].to("Msun").v
-        region_p5_pos     = region[("PartType5","Coordinates")].v
-        region_p5_mass    = region[("PartType5","Masses")].to("Msun").v
-        region_p5_ids     = region[("PartType5","ParticleIDs")].v.astype(int)
+        region_star4_pos  = np.asarray(region[("PartType4", "Coordinates")].v)
+        region_star4_mass = np.asarray(region[("PartType4", "Masses")].to("Msun").v, dtype=float)
+        
+        region_p5_pos     = np.asarray(region[("PartType5", "Coordinates")].v)
+        region_p5_mass    = np.asarray(region[("PartType5", "Masses")].to("Msun").v, dtype=float)
+        region_p5_ids     = np.asarray(region[("PartType5", "ParticleIDs")].v, dtype=int)
+        
         is_star_region = np.array([
-            sinks[pid]["meta"]["Type"] not in ("MBH","BH",3)
+            sinks[pid]["meta"]["Type"] not in ("MBH", "BH", 3)
             if pid in sinks else True
             for pid in region_p5_ids
-        ])
-        region_star_pos  = np.vstack([region_star4_pos, region_p5_pos[is_star_region]]) if region_star4_pos.shape[0] > 0 or is_star_region.any() else np.zeros((0,3))
-        region_star_mass = np.concatenate([region_star4_mass, region_p5_mass[is_star_region]])
-        R50_ap = compute_R50(center_code, region_star_pos, region_star_mass, ds)
+        ], dtype=bool)
+        
+        # Safety: ensure mask is a proper 1D boolean array
+        is_star_region = np.atleast_1d(np.asarray(is_star_region, dtype=bool))
+        region_p5_mass = np.atleast_1d(region_p5_mass)
+        region_p5_pos  = np.atleast_2d(region_p5_pos)
+        
+        # Optional sanity check
+        if region_p5_mass.shape[0] != is_star_region.shape[0]:
+            raise ValueError(
+                f"Mask length mismatch: region_p5_mass={region_p5_mass.shape[0]}, "
+                f"is_star_region={is_star_region.shape[0]}"
+            )
 
+        # Build combined stellar arrays safely
+        if region_p5_mass.size > 0 and np.any(is_star_region):
+            region_star_mass = np.concatenate([
+                region_star4_mass,
+                region_p5_mass[is_star_region]
+            ])
+            
+            region_star_pos = np.vstack([
+                region_star4_pos,
+                region_p5_pos[is_star_region]
+            ]) if region_star4_pos.size > 0 else region_p5_pos[is_star_region]
+        else:
+            region_star_mass = region_star4_mass
+            region_star_pos  = region_star4_pos
+            
+        R50_ap = compute_R50(center_code, region_star_pos, region_star_mass, ds)
 
         # ---- BH MASS ----
         BH_id = g["bh_ids"][0]
@@ -406,7 +433,7 @@ def process_snapshot(args):
                 sinks[pid]["meta"]["Type"] not in ("MBH","BH",3)
                 if pid in sinks else True
                 for pid in region_p5_ids
-            ])
+            ], dtype=bool)
             Mstar5_ap = float(region_p5_mass[is_star_ap].sum())
             print(f"Stellar mass (Type4): {Mstar_ap:.3e}  Type5_stars: {Mstar5_ap:.3e}  Total: {Mstar_ap + Mstar5_ap:.3e}")
             print("Metallicity mass-weighted:", Zmw)
@@ -473,8 +500,9 @@ def extract_galaxy_properties(
     from DataReader import Reader
     R = Reader(base)
     sinks = R.pickle_reader(sinks_file)["data"]
-
-    with open("mergers.pkl", "rb") as f:
+    merger_file = base+"mergers.pkl"
+    galaxies_file = base+galaxies_file
+    with open(merger_file, "rb") as f:
         mergers = pickle.load(f)
     from collections import defaultdict
     mergers_by_id = defaultdict(list)
@@ -585,7 +613,7 @@ if __name__ == "__main__":
     parser.add_argument("region", choices=["Rarepeak", "Normal1", "Normal2"], help="Simulation region")
     args = parser.parse_args()
     base = "./"
-
+    base = "%s%s_%s/" % (base, args.region, args.feedback)
     
     extract_galaxy_properties(args.snap_base, base)
     pkl_dir = "%s_%s" % (args.region, args.feedback)

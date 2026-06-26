@@ -32,6 +32,8 @@ plt.rcParams["axes.unicode_minus"] = False
 
 def plot_mergers(base, outfile="mergers.pkl", m2_threshold=1000.0):
 
+    outfile = base+outfile
+    print("outfile = ", outfile)
     # ---------------------------------------------------------
     # Extract merger catalogue (Step 1)
     # ---------------------------------------------------------
@@ -122,5 +124,12 @@ def plot_mergers(base, outfile="mergers.pkl", m2_threshold=1000.0):
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("snap_base", help="Path to simulation snapshot directory")
+    parser.add_argument("feedback", choices=["FullFeedback", "WeakFeedback", "NoFeedback"], help="Feedback model")
+    parser.add_argument("region", choices=["Rarepeak", "Normal1", "Normal2"], help="Region")
+    args = parser.parse_args()
     base = "./"
+    base = "%s%s_%s/" % (base, args.region, args.feedback)
     plot_mergers(base)

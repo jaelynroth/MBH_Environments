@@ -19,29 +19,30 @@ import sys
 
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal1/0.5Mpc/NoFeedback/"
 
-#Choose Feedback
 #Feedback = "FullFeedback"
-Feedback = "WeakFeedback"
+#Feedback = "WeakFeedback"
 
-#Choose Region
 #Region = "Rarepeak"
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Feedback_Elliptical/"
 #Region = "Normal1"
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal1/0.5Mpc/Feedback/"
 #Region = "Normal2"
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal2/0.5Mpc/Feedback/"
-
-
 #Region = "Rarepeak"
 #path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/WeakFeedback_Elliptical/"
+#Region = "Normal1"
+#path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal1/0.5Mpc/WeakFeedback/"
 
-Region = "Normal1"
-path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal1/0.5Mpc/WeakFeedback/"
+
+#PICKS
+Feedback = "NoFeedback"
+Region = "Normal2"
+path_to_snapshots = "/home/daxal/data/ProductionRuns/Renaissance/Normal2/0.5Mpc/NoFeedback/"
 
 SCRIPTS = [
-    ["python", "CreateSinkPickleFile.py", path_to_snapshots, Feedback],
-    ["python", "DetermineMergers.py"],
-    ["python", "BHs2Galaxies.py",                              path_to_snapshots],
+    ["python", "CreateSinkPickleFile.py", path_to_snapshots, Feedback, Region],
+    ["python", "DetermineMergers.py",     path_to_snapshots, Feedback, Region],
+    ["python", "BHs2Galaxies.py",         path_to_snapshots, Feedback, Region],
     ["python", "extract_galaxy_properties_parallel.py",  path_to_snapshots, Feedback, Region],
     ["python", "MBHEnvCatalogGenerator_SEEDZ.py", Feedback],
     ["python", "../../PlotCatalogueContents.py"]

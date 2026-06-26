@@ -70,9 +70,10 @@ def build_merger_galaxies(
     sinks = R.pickle_reader("sink_particle.pkl")["data"]
 
     # Load mergers
+    mergers_file = pkl_base+mergers_file
     with open(mergers_file, "rb") as f:
         mergers = pickle.load(f)
-
+    outfile=pkl_base+outfile
     # Load snapshot redshifts
     snap_list = load_snapshot_redshifts(snap_base)
     if len(snap_list) == 0:
@@ -127,7 +128,9 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("snap_base", help="Path to simulation snapshot directory")
+    parser.add_argument("feedback", choices=["FullFeedback", "WeakFeedback", "NoFeedback"], help="Feedback model")
+    parser.add_argument("region", choices=["Rarepeak", "Normal1", "Normal2"], help="Region")
     args = parser.parse_args()
     pkl_base = "./"
-
+    pkl_base = "%s%s_%s/" % (pkl_base, args.region, args.feedback)
     build_merger_galaxies(pkl_base, args.snap_base)
