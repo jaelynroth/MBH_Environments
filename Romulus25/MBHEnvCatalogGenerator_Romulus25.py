@@ -194,7 +194,7 @@ def get_binary_information(metadata):
     import pandas as pd
 
     # read in pre-existing catalog object
-    bhmergers = pd.read_pickle('./pklfiles/BHmergers_HostInfo_Strict_v2.1.pkl')
+    bhmergers = pd.read_pickle('./pklfiles/rom25cat.pkl')
 
     N_binaries = len(bhmergers['ID1'])
 
@@ -218,8 +218,8 @@ def get_binary_information(metadata):
     mdm = bhmergers['HostMdm']
     zgal = bhmergers['HostRedshift']
     R50 = bhmergers['R50']
-    metallicity =  np.random.normal(loc=1e10, scale=1e8, size=N_binaries) ############################ need to get host metallicity
-    galpos = np.array(["central"] * N_binaries, dtype="S")
+    metallicity =  bhmergers['host_gas_metallicity_zsun'] # units z/zsun
+    galpos = np.array(["central"] * N_binaries, dtype="S",)
    
     # FILL METADATA INFO
     # total number of merged binaries assuming no delays
@@ -286,10 +286,10 @@ def write_catalog_hdf5(filename, metadata, mbhenv):
         for key, value in metadata.items():
             # store strings as fixed-length UTF-8
             if isinstance(value, str):
-                gmeta.attrs[key] = np.string_(value)
+                gmeta.attrs[key] = np.bytes_(value)
             elif isinstance(value, list):
                 # convert lists-of-strings to variable-length strings
-                gmeta.attrs[key] = [np.string_(v) for v in value]
+                gmeta.attrs[key] = [np.bytes_(v) for v in value]
             else:
                 gmeta.attrs[key] = value
 
